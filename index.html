@@ -1,0 +1,42 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+	</head>
+	<body>
+		BTC:<br><span id="btc">0</span> <span class="cur"></span><br><br>
+		ETH:<br><span id="eth">0</span> <span class="cur"></span><br><br>
+		Total:<br><span id="sum">0</span> <span class="cur"></span><br><br>
+		<script>
+
+			$(document).ready(function() {
+				const params = new Proxy(new URLSearchParams(window.location.search), {
+					get: (searchParams, prop) => searchParams.get(prop),
+				})
+
+				const currency = params.cur || 'eur'
+				$('.cur').text(currency.toUpperCase())
+				const totalBtc = params.btc ? parseFloat(params.btc) : 0
+				const totalEth = params.eth ? parseFloat(params.eth) : 0
+
+				let btcPrice = 0
+				let ethPrice = 0
+
+				const opts = { method: 'GET', timeout: 0, }
+
+				opts.url = 'https://api.binance.com/api/v3/avgPrice?symbol=BTC' + (currency === 'eur' ? 'EUR' : 'USDT')
+
+				$.ajax(opts).done(function(resp) {
+					btcPrice = parseFloat(resp.price)
+					$('#btc').text(Math.floor(btcPrice*totalBtc).toLocaleString('en-US'))
+					opts.url = 'https://api.binance.com/api/v3/avgPrice?symbol=ETH' + (currency === 'eur' ? 'EUR' : 'USDT')
+					$.ajax(opts).done(function(resp) {
+						ethPrice = parseFloat(resp.price)
+						$('#eth').text(Math.floor(ethPrice*totalEth).toLocaleString('en-US')+'')
+						$('#sum').text(Math.floor((btcPrice*totalBtc)+(ethPrice*totalEth)).toLocaleString('en-US')+'')
+					})
+				})
+			})
+		</script>
+	</body>
+</html>
